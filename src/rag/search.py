@@ -1,4 +1,6 @@
 
+from .paths import DATA_DIR
+
 from pymilvus import MilvusClient
 from sentence_transformers import SentenceTransformer
 from FlagEmbedding import FlagReranker
@@ -8,7 +10,7 @@ from FlagEmbedding import FlagReranker
 # 1. Configuration
 # --------------------------------------------------
 
-DB_PATH = "data/milvus.db"
+DB_PATH = str(DATA_DIR / "milvus.db")
 COLLECTION_NAME = "docker_documents"
 
 EMBEDDING_MODEL_NAME = "BAAI/bge-m3"
@@ -22,6 +24,7 @@ TOP_K = 2        # Nombre de chunks conservés après reranking
 # 2. Connexion à Milvus
 # --------------------------------------------------
 
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 client = MilvusClient(DB_PATH)
 
 client.load_collection(

@@ -25,13 +25,15 @@ services:
 
   rag-api:
     image: smalianass/rag-api:1.0.0
-    build: .
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
     ports:
       - "8000:8000"
     environment:
       OLLAMA_HOST: http://ollama:11434
     volumes:
-      - ./data:/rag/data
+      - ../data:/app/data
     depends_on:
       ollama-init:
         condition: service_completed_successfully
@@ -39,8 +41,8 @@ services:
 
   streamlit:
     build:
-      context: .
-      dockerfile: Dockerfile.frontend
+      context: ..
+      dockerfile: deploy/Dockerfile.frontend
     ports:
       - "8501:8501"
     environment:

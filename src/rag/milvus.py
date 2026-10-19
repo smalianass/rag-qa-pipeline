@@ -1,10 +1,7 @@
-from pathlib import Path
-
 from pymilvus import DataType, MilvusClient
+from .paths import DATA_DIR
 
 
-BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
 DB_PATH = DATA_DIR / "milvus.db"
 COLLECTION_NAME = "docker_documents"
 EMBEDDING_DIM = 1024

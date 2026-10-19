@@ -8,7 +8,7 @@ import pytest
 
 @pytest.fixture
 def search_module(monkeypatch):
-    """Importe search.py avec Milvus et les modèles simulés."""
+    """Importe rag.search avec Milvus et les modèles simulés."""
 
     fake_client = MagicMock()
     fake_embedding_model = MagicMock()
@@ -34,12 +34,12 @@ def search_module(monkeypatch):
     monkeypatch.setitem(sys.modules, "FlagEmbedding", fake_flag_embedding)
 
     # Force un nouvel import avec les dépendances simulées.
-    sys.modules.pop("search", None)
-    module = importlib.import_module("search")
+    sys.modules.pop("rag.search", None)
+    module = importlib.import_module("rag.search")
 
     yield module, fake_client, fake_embedding_model, fake_reranker
 
-    sys.modules.pop("search", None)
+    sys.modules.pop("rag.search", None)
 
 
 def test_empty_query_returns_empty_list(search_module):

@@ -26,8 +26,7 @@ jobs:
       - name: Check Python syntax
         run: |
           python -m compileall -q \
-            rag.py search.py generate.py \
-            chat_memory.py streamlit.py
+            src/rag scripts frontend
 
   test:
     name: Unit tests
@@ -68,10 +67,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build backend image
-        run: docker build -t rag-api:ci .
+        run: docker build -f deploy/Dockerfile -t rag-api:ci .
 
       - name: Build frontend image
         run: |
           docker build \
-            -f Dockerfile.frontend \
+            -f deploy/Dockerfile.frontend \
             -t rag-frontend:ci .

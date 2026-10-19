@@ -1,13 +1,15 @@
 import re
 import json
+from pathlib import Path
 
 
 # ============================================================
 # CONFIGURATION
 # ============================================================
 
-markdown_path = "data/docker_cheatsheet.md"
-output_path = "data/chunks.json"
+DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+markdown_path = DATA_DIR / "docker_cheatsheet.md"
+output_path = DATA_DIR / "chunks.json"
 
 source_name = "docker_cheatsheet.pdf"
 
@@ -16,7 +18,7 @@ source_name = "docker_cheatsheet.pdf"
 # 1. LECTURE DU MARKDOWN
 # ============================================================
 
-with open(markdown_path, "r", encoding="utf-8") as f:
+with markdown_path.open("r", encoding="utf-8") as f:
     markdown = f.read()
 
 
@@ -148,7 +150,7 @@ for document in documents:
 # 5. SAUVEGARDE JSON
 # ============================================================
 
-with open(output_path, "w", encoding="utf-8") as f:
+with output_path.open("w", encoding="utf-8") as f:
 
     json.dump(
         chunks,

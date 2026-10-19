@@ -4,9 +4,9 @@ from uuid import uuid4
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from search import search_top_k
-from generate import generate_answer
-from chat_memory import (
+from .search import search_top_k
+from .generate import generate_answer
+from .chat_memory import (
     create_session,
     save_message,
     get_history,

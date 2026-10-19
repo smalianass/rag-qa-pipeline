@@ -1,9 +1,9 @@
 
 import sqlite3
-from pathlib import Path
+from .paths import DATA_DIR
 
 # La base sera stockée dans le dossier data du projet.
-DB_PATH = Path(__file__).resolve().parent / "data" / "chat_history.db"
+DB_PATH = DATA_DIR / "chat_history.db"
 
 
 def get_connection():

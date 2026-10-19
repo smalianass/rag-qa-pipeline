@@ -1,7 +1,7 @@
 import json
-from milvus import (
-    BASE_DIR,
+from rag.milvus import (
     COLLECTION_NAME,
+    DATA_DIR,
     EMBEDDING_DIM,
     client,
     ensure_collection,
@@ -9,7 +9,7 @@ from milvus import (
 
 
 def main() -> None:
-    input_path = BASE_DIR / "data" / "chunks_embeddings.json"
+    input_path = DATA_DIR / "chunks_embeddings.json"
     with input_path.open("r", encoding="utf-8") as file:
         chunks = json.load(file)
 

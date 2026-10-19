@@ -7,12 +7,14 @@ env/
 # Python
 __pycache__/
 *.py[cod]
+*.egg-info/
 .pytest_cache/
 .coverage
 htmlcov/
 
 # Données locales et bases de données
-data/
+data/*
+!data/.gitkeep
 *.db
 *.sqlite
 *.sqlite3

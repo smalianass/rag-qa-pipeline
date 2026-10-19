@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from sentence_transformers import SentenceTransformer
 
 
@@ -6,8 +7,9 @@ from sentence_transformers import SentenceTransformer
 # CONFIGURATION
 # ============================================================
 
-input_path = "data/chunks.json"
-output_path = "data/chunks_embeddings.json"
+DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+input_path = DATA_DIR / "chunks.json"
+output_path = DATA_DIR / "chunks_embeddings.json"
 
 model_name = "BAAI/bge-m3"
 
@@ -16,7 +18,7 @@ model_name = "BAAI/bge-m3"
 # 1. CHARGER LES CHUNKS
 # ============================================================
 
-with open(input_path, "r", encoding="utf-8") as f:
+with input_path.open("r", encoding="utf-8") as f:
     chunks = json.load(f)
 
 print(f"Nombre de chunks : {len(chunks)}")
@@ -67,7 +69,7 @@ for chunk, embedding in zip(chunks, embeddings):
 # 6. SAUVEGARDER
 # ============================================================
 
-with open(output_path, "w", encoding="utf-8") as f:
+with output_path.open("w", encoding="utf-8") as f:
 
     json.dump(
         chunks,
