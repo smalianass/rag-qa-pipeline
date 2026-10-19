@@ -1,0 +1,53 @@
+
+services:
+  ollama:
+    image: ollama/ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+  ollama-init:
+    image: ollama/ollama
+    depends_on:
+      - ollama
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        until ollama list >/dev/null 2>&1; do
+          echo "En attente du serveur Ollama..."
+          sleep 2
+        done
+        ollama pull llama3.2:3b
+        echo "Modèle prêt."
+    restart: "no"
+
+  rag-api:
+    image: smalianass/rag-api:1.0.0
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    volumes:
+      - ./data:/rag/data
+    depends_on:
+      ollama-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8501:8501"
+    environment:
+      RAG_API_URL: http://rag-api:8000
+    depends_on:
+      - rag-api
+    restart: unless-stopped
+
+volumes:
+  ollama_data:

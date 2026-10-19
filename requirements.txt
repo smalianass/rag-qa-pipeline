@@ -1,0 +1,12 @@
+langchain
+pymupdf
+pypdf
+docling
+sentence-transformers
+pymilvus
+milvus-lite
+ollama
+fastapi
+uvicorn
+FlagEmbedding
+pytest

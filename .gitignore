@@ -1,0 +1,40 @@
+
+# Environnements Python
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Données locales et bases de données
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Modèles et caches téléchargés
+.cache/
+huggingface/
+models/
+
+# Secrets et variables d'environnement
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# IDE et système
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Rapports temporaires
+report.xml
