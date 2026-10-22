@@ -16,3 +16,4 @@ pytest-cov
 langchain_huggingface
 langchain_ollama
 langchain_milvus
+langchain-core
