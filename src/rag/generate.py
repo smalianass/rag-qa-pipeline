@@ -1,32 +1,23 @@
+
 import os
 
-import ollama
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_ollama import ChatOllama
 
 MODEL_NAME = "llama3.2:3b"
 
-ollama_client = ollama.Client(host=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
+llm = ChatOllama(
+    model=MODEL_NAME,
+    base_url=os.getenv("OLLAMA_HOST", "http://localhost:11434"),
+    temperature=0,
+)
 
-
-def build_prompt(question: str, chunks: list, history: list | None = None) -> str:
-
-    # 1. Construire le contexte documentaire récupéré depuis Milvus
-    context = "\n\n".join(
-        f"""[Chunk {i + 1}]
-Section: {chunk["entity"]["section"]}
-
-{chunk["entity"]["content"]}"""
-        for i, chunk in enumerate(chunks)
-    )
-
-    # 2. Construire l'historique conversationnel
-    conversation = ""
-
-    if history:
-        conversation = "\n".join(f"{message['role']}: {message['content']}" for message in history)
-
-    # 3. Construire le prompt complet
-    prompt = f"""
-Tu es un assistant spécialisé dans Docker.
+prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """Tu es un assistant spécialisé dans Docker.
 
 Réponds à la question actuelle en utilisant uniquement
 les informations présentes dans le contexte documentaire.
@@ -38,30 +29,84 @@ documentaire supplémentaire.
 Si la réponse ne se trouve pas dans le contexte, indique
 que l'information n'est pas présente dans les documents.
 
-Ne fais pas appel à des connaissances externes.
+Ne fais pas appel à des connaissances externes.""",
+        ),
+        (
+            "human",
+            """### HISTORIQUE DE LA CONVERSATION
 
-### HISTORIQUE DE LA CONVERSATION
-
-{conversation if conversation else "Aucun échange précédent."}
+{conversation}
 
 ### CONTEXTE DOCUMENTAIRE
 
-{context if context else "Aucun document pertinent récupéré."}
+{context}
 
 ### QUESTION ACTUELLE
 
 {question}
 
-### RÉPONSE
-"""
+### RÉPONSE""",
+        ),
+    ]
+)
 
-    return prompt
+# Chaîne LangChain : prompt -> modèle Ollama -> texte final
+generation_chain = prompt | llm | StrOutputParser()
 
 
-def generate_answer(question: str, chunks: list, history: list | None = None) -> str:
+def build_prompt(
+    question: str,
+    chunks: list,
+    history: list | None = None,
+) -> str:
+    """Construit un prompt lisible pour le diagnostic."""
 
-    prompt = build_prompt(question=question, chunks=chunks, history=history)
+    context = "\n\n".join(
+        f"""[Chunk {i + 1}]
+Section: {chunk["entity"]["section"]}
 
-    response = ollama_client.chat(model=MODEL_NAME, messages=[{"role": "user", "content": prompt}])
+{chunk["entity"]["content"]}"""
+        for i, chunk in enumerate(chunks)
+    )
 
-    return response["message"]["content"]
+    conversation = "\n".join(
+        f"{message['role']}: {message['content']}"
+        for message in (history or [])
+    )
+
+    formatted = prompt.format(
+        question=question,
+        context=context or "Aucun document pertinent récupéré.",
+        conversation=conversation or "Aucun échange précédent.",
+    )
+
+    return formatted
+
+
+def generate_answer(
+    question: str,
+    chunks: list,
+    history: list | None = None,
+) -> str:
+    """Génère une réponse à partir des documents récupérés."""
+
+    context = "\n\n".join(
+        f"""[Chunk {i + 1}]
+Section: {chunk["entity"]["section"]}
+
+{chunk["entity"]["content"]}"""
+        for i, chunk in enumerate(chunks)
+    )
+
+    conversation = "\n".join(
+        f"{message['role']}: {message['content']}"
+        for message in (history or [])
+    )
+
+    return generation_chain.invoke(
+        {
+            "question": question,
+            "context": context or "Aucun document pertinent récupéré.",
+            "conversation": conversation or "Aucun échange précédent.",
+        }
+    )

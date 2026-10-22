@@ -13,3 +13,6 @@ pytest
 ruff
 mypy
 pytest-cov
+langchain_huggingface
+langchain_ollama
+langchain_milvus

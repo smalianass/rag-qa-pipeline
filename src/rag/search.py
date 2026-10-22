@@ -1,6 +1,7 @@
+
 from FlagEmbedding import FlagReranker
-from pymilvus import MilvusClient
-from sentence_transformers import SentenceTransformer
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_milvus import Milvus
 
 from .paths import DATA_DIR
 
@@ -14,124 +15,118 @@ COLLECTION_NAME = "docker_documents"
 EMBEDDING_MODEL_NAME = "BAAI/bge-m3"
 RERANKER_MODEL_NAME = "BAAI/bge-reranker-v2-m3"
 
-CANDIDATE_K = 4  # Nombre de chunks récupérés par Milvus
-TOP_K = 2  # Nombre de chunks conservés après reranking
-
+CANDIDATE_K = 4
+TOP_K = 2
 
 # --------------------------------------------------
-# 2. Connexion à Milvus
+# 2. Chargement des embeddings
 # --------------------------------------------------
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
-client = MilvusClient(DB_PATH)
-
-client.load_collection(collection_name=COLLECTION_NAME)
-
-print(f"Collection '{COLLECTION_NAME}' chargée.")
-
-
-# --------------------------------------------------
-# 3. Chargement des modèles
-# --------------------------------------------------
 
 print("Chargement du modèle d'embedding...")
 
-embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
+embedding_model = HuggingFaceEmbeddings(
+    model_name=EMBEDDING_MODEL_NAME,
+    model_kwargs={"device": "cpu"},
+    encode_kwargs={"normalize_embeddings": True},
+)
 
 print("Chargement du modèle de reranking...")
 
-reranker = FlagReranker(RERANKER_MODEL_NAME, use_fp16=False)
+reranker = FlagReranker(
+    RERANKER_MODEL_NAME,
+    use_fp16=False,
+)
 
-print("Modèles chargés avec succès.")
+# --------------------------------------------------
+# 3. Connexion à la collection Milvus existante
+# --------------------------------------------------
+
+vector_store = Milvus(
+    embedding_function=embedding_model,
+    collection_name=COLLECTION_NAME,
+    connection_args={"uri": DB_PATH},
+    vector_field="embedding",
+    primary_field="id",
+    text_field="content",
+    metadata_field=["source", "section"],
+    auto_id=False,
+    drop_old=False,
+)
+
+print(f"Collection '{COLLECTION_NAME}' connectée via LangChain.")
 
 
 # --------------------------------------------------
 # 4. Recherche vectorielle + reranking
 # --------------------------------------------------
 
-
-def search_top_k(query: str, k: int = TOP_K):
+def search_top_k(query: str, k: int = TOP_K) -> list:
     """
-    Recherche les chunks dans Milvus, puis les reclasse
-    avec le reranker.
+    Recherche les chunks via LangChain/Milvus, puis les reclasse
+    avec le reranker BGE.
 
-    Args:
-        query: question de l'utilisateur.
-        k: nombre final de chunks à retourner.
-
-    Returns:
-        Liste des chunks les plus pertinents après reranking.
+    Le format des résultats reste compatible avec le pipeline existant.
     """
 
-    if not query or not query.strip():
+    if not query or not query.strip() or k <= 0:
         return []
 
-    if k <= 0:
-        return []
-
-    # ----------------------------------------------
-    # Étape 1 : embedding de la question
-    # ----------------------------------------------
-
-    query_embedding = embedding_model.encode(query, normalize_embeddings=True)
-
-    # ----------------------------------------------
-    # Étape 2 : récupération des candidats par Milvus
-    # ----------------------------------------------
-
-    results = client.search(
-        collection_name=COLLECTION_NAME,
-        data=[query_embedding.tolist()],
-        limit=CANDIDATE_K,
-        output_fields=["source", "section", "content"],
-        search_params={"metric_type": "COSINE"},
+    # Étape 1 : recherche vectorielle via LangChain
+    documents_with_scores = vector_store.similarity_search_with_score(
+        query,
+        k=CANDIDATE_K,
     )
 
-    candidates = results[0]
-
-    if not candidates:
+    if not documents_with_scores:
         return []
 
-    # ----------------------------------------------
-    # Étape 3 : préparation des paires question-chunk
-    # ----------------------------------------------
+    # Étape 2 : reconstruire le format attendu par le reste du projet
+    candidates = []
 
-    pairs = [[query, candidate["entity"]["content"]] for candidate in candidates]
-
-    # ----------------------------------------------
-    # Étape 4 : calcul des scores de reranking
-    # ----------------------------------------------
-
-    scores = reranker.compute_score(pairs, normalize=False)
-
-    # compute_score renvoie un scalaire pour une seule paire
-    # et une liste pour plusieurs paires.
-    if isinstance(scores, (int, float)):
-        scores = [scores]
-
-    # ----------------------------------------------
-    # Étape 5 : ajouter les scores et trier
-    # ----------------------------------------------
-
-    reranked_results = []
-
-    for candidate, score in zip(candidates, scores):
-        entity = candidate["entity"]
-
-        reranked_results.append(
+    for document, distance in documents_with_scores:
+        candidates.append(
             {
-                "id": candidate["id"],
-                "distance": candidate.get("distance"),
-                "rerank_score": float(score),
-                "entity": entity,
+                "id": document.metadata["id"],
+                "distance": distance,
+                "entity": {
+                    "source": document.metadata.get("source", ""),
+                    "section": document.metadata.get("section", ""),
+                    "content": document.page_content,
+                },
             }
         )
 
-    reranked_results.sort(key=lambda item: item["rerank_score"], reverse=True)
+    # Étape 3 : préparer les paires question-document
+    pairs = [
+        [query, candidate["entity"]["content"]]
+        for candidate in candidates
+    ]
 
-    # ----------------------------------------------
-    # Étape 6 : retourner les k meilleurs chunks
-    # ----------------------------------------------
+    # Étape 4 : calculer les scores de reranking
+    scores = reranker.compute_score(pairs, normalize=False)
+
+    if isinstance(scores, (int, float)):
+        scores = [scores]
+
+    # Étape 5 : trier les résultats selon le reranker
+    reranked_results = []
+
+    for candidate, score in zip(candidates, scores):
+        reranked_results.append(
+            {
+                "id": candidate["id"],
+                "distance": candidate["distance"],
+                "rerank_score": float(score),
+                "entity": candidate["entity"],
+            }
+        )
+
+    reranked_results.sort(
+        key=lambda item: item["rerank_score"],
+        reverse=True,
+    )
 
     final_results = reranked_results[:k]
 
