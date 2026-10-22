@@ -10,3 +10,6 @@ fastapi
 uvicorn
 FlagEmbedding
 pytest
+ruff
+mypy
+pytest-cov

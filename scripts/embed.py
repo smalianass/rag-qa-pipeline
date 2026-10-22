@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
-from sentence_transformers import SentenceTransformer
 
+from sentence_transformers import SentenceTransformer
 
 # ============================================================
 # CONFIGURATION
@@ -37,10 +37,7 @@ model = SentenceTransformer(model_name)
 # 3. EXTRAIRE LE TEXTE DES CHUNKS
 # ============================================================
 
-texts = [
-    chunk["content"]
-    for chunk in chunks
-]
+texts = [chunk["content"] for chunk in chunks]
 
 
 # ============================================================
@@ -49,11 +46,7 @@ texts = [
 
 print("Génération des embeddings...")
 
-embeddings = model.encode(
-    texts,
-    normalize_embeddings=True,
-    show_progress_bar=True
-)
+embeddings = model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
 
 
 # ============================================================
@@ -61,7 +54,6 @@ embeddings = model.encode(
 # ============================================================
 
 for chunk, embedding in zip(chunks, embeddings):
-
     chunk["embedding"] = embedding.tolist()
 
 
@@ -70,13 +62,7 @@ for chunk, embedding in zip(chunks, embeddings):
 # ============================================================
 
 with output_path.open("w", encoding="utf-8") as f:
-
-    json.dump(
-        chunks,
-        f,
-        ensure_ascii=False,
-        indent=2
-    )
+    json.dump(chunks, f, ensure_ascii=False, indent=2)
 
 
 # ============================================================

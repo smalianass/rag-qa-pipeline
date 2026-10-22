@@ -1,4 +1,3 @@
-
 import importlib
 import sys
 from unittest.mock import MagicMock
@@ -18,9 +17,7 @@ def search_module(monkeypatch):
     fake_pymilvus.MilvusClient.return_value = fake_client
 
     fake_sentence_transformers = MagicMock()
-    fake_sentence_transformers.SentenceTransformer.return_value = (
-        fake_embedding_model
-    )
+    fake_sentence_transformers.SentenceTransformer.return_value = fake_embedding_model
 
     fake_flag_embedding = MagicMock()
     fake_flag_embedding.FlagReranker.return_value = fake_reranker
@@ -72,35 +69,37 @@ def test_reranking_sorts_by_score_and_limits_results(search_module):
 
     embedding_model.encode.return_value.tolist.return_value = [0.1, 0.2]
 
-    client.search.return_value = [[
-        {
-            "id": 1,
-            "distance": 0.9,
-            "entity": {
-                "source": "docker.pdf",
-                "section": "Installation",
-                "content": "Installer Docker sur Linux.",
+    client.search.return_value = [
+        [
+            {
+                "id": 1,
+                "distance": 0.9,
+                "entity": {
+                    "source": "docker.pdf",
+                    "section": "Installation",
+                    "content": "Installer Docker sur Linux.",
+                },
             },
-        },
-        {
-            "id": 2,
-            "distance": 0.8,
-            "entity": {
-                "source": "docker.pdf",
-                "section": "Conteneurs",
-                "content": "Un conteneur est une instance exécutable d'une image.",
+            {
+                "id": 2,
+                "distance": 0.8,
+                "entity": {
+                    "source": "docker.pdf",
+                    "section": "Conteneurs",
+                    "content": "Un conteneur est une instance exécutable d'une image.",
+                },
             },
-        },
-        {
-            "id": 3,
-            "distance": 0.7,
-            "entity": {
-                "source": "docker.pdf",
-                "section": "Images",
-                "content": "Une image Docker est un modèle en lecture seule.",
+            {
+                "id": 3,
+                "distance": 0.7,
+                "entity": {
+                    "source": "docker.pdf",
+                    "section": "Images",
+                    "content": "Une image Docker est un modèle en lecture seule.",
+                },
             },
-        },
-    ]]
+        ]
+    ]
 
     # Les scores sont volontairement dans un ordre différent
     # de celui de la recherche vectorielle.

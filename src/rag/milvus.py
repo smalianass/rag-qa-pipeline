@@ -1,6 +1,6 @@
 from pymilvus import DataType, MilvusClient
-from .paths import DATA_DIR
 
+from .paths import DATA_DIR
 
 DB_PATH = DATA_DIR / "milvus.db"
 COLLECTION_NAME = "docker_documents"

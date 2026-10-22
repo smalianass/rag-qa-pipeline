@@ -1,4 +1,5 @@
 import json
+
 from rag.milvus import (
     COLLECTION_NAME,
     DATA_DIR,
@@ -28,9 +29,7 @@ def main() -> None:
                 "embedding": embedding,
             }
         except (KeyError, TypeError, ValueError) as error:
-            raise ValueError(
-                f"Chunk invalide à la position {position}: {error}"
-            ) from error
+            raise ValueError(f"Chunk invalide à la position {position}: {error}") from error
 
         if len(embedding) != EMBEDDING_DIM:
             raise ValueError(

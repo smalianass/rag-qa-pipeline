@@ -1,22 +1,13 @@
-
 import os
+
 import ollama
 
 MODEL_NAME = "llama3.2:3b"
 
-ollama_client = ollama.Client(
-    host=os.getenv(
-        "OLLAMA_HOST",
-        "http://localhost:11434"
-    )
-)
+ollama_client = ollama.Client(host=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
 
 
-def build_prompt(
-    question: str,
-    chunks: list,
-    history: list | None = None
-) -> str:
+def build_prompt(question: str, chunks: list, history: list | None = None) -> str:
 
     # 1. Construire le contexte documentaire récupéré depuis Milvus
     context = "\n\n".join(
@@ -31,10 +22,7 @@ Section: {chunk["entity"]["section"]}
     conversation = ""
 
     if history:
-        conversation = "\n".join(
-            f'{message["role"]}: {message["content"]}'
-            for message in history
-        )
+        conversation = "\n".join(f"{message['role']}: {message['content']}" for message in history)
 
     # 3. Construire le prompt complet
     prompt = f"""
@@ -70,26 +58,10 @@ Ne fais pas appel à des connaissances externes.
     return prompt
 
 
-def generate_answer(
-    question: str,
-    chunks: list,
-    history: list | None = None
-) -> str:
+def generate_answer(question: str, chunks: list, history: list | None = None) -> str:
 
-    prompt = build_prompt(
-        question=question,
-        chunks=chunks,
-        history=history
-    )
+    prompt = build_prompt(question=question, chunks=chunks, history=history)
 
-    response = ollama_client.chat(
-        model=MODEL_NAME,
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-    )
+    response = ollama_client.chat(model=MODEL_NAME, messages=[{"role": "user", "content": prompt}])
 
     return response["message"]["content"]

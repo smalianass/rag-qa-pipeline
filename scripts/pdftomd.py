@@ -1,5 +1,6 @@
-from docling.document_converter import DocumentConverter
 from pathlib import Path
+
+from docling.document_converter import DocumentConverter
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 pdf_path = DATA_DIR / "docker_cheatsheet.pdf"

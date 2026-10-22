@@ -1,5 +1,5 @@
-
 import os
+
 import requests
 import streamlit as st
 
@@ -18,6 +18,7 @@ st.caption("Pose tes questions à partir de tes documents.")
 # --------------------------------------------------
 # 1. Fonctions pour communiquer avec FastAPI
 # --------------------------------------------------
+
 
 def create_new_session():
     response = requests.post(
@@ -84,11 +85,7 @@ with st.sidebar:
             if not first_question:
                 continue
 
-            title = (
-                first_question[:45] + "..."
-                if len(first_question) > 45
-                else first_question
-            )
+            title = first_question[:45] + "..." if len(first_question) > 45 else first_question
 
             if session_id == st.session_state.session_id:
                 label = f"🟢 {title}"
@@ -115,17 +112,13 @@ with st.sidebar:
                     st.rerun()
 
                 except requests.RequestException as error:
-                    st.error(
-                        f"Impossible de charger la conversation : {error}"
-                    )
+                    st.error(f"Impossible de charger la conversation : {error}")
 
         if not any(s.get("first_question") for s in sessions):
             st.caption("Aucune conversation sauvegardée.")
 
     except requests.RequestException as error:
-        st.error(
-            f"Impossible de récupérer les conversations : {error}"
-        )
+        st.error(f"Impossible de récupérer les conversations : {error}")
 
 
 # --------------------------------------------------
@@ -174,10 +167,12 @@ if question:
                 st.markdown(answer)
 
         # Mettre à jour l'historique local après une réponse réussie.
-        st.session_state.messages.extend([
-            {"role": "user", "content": question},
-            {"role": "assistant", "content": answer},
-        ])
+        st.session_state.messages.extend(
+            [
+                {"role": "user", "content": question},
+                {"role": "assistant", "content": answer},
+            ]
+        )
 
         # Relancer l'affichage pour actualiser la sidebar
         # et faire apparaître la nouvelle conversation.

@@ -1,5 +1,5 @@
-
 import sqlite3
+
 from .paths import DATA_DIR
 
 # La base sera stockée dans le dossier data du projet.
@@ -49,6 +49,7 @@ def init_db():
             ON messages(session_id)
         """)
 
+
 def create_session(session_id, title="Nouvelle conversation"):
     with get_connection() as conn:
         conn.execute(
@@ -56,7 +57,7 @@ def create_session(session_id, title="Nouvelle conversation"):
             INSERT INTO sessions (session_id, title)
             VALUES (?, ?)
             """,
-            (session_id, title)
+            (session_id, title),
         )
 
 
@@ -67,7 +68,7 @@ def save_message(session_id, role, content):
             INSERT INTO messages (session_id, role, content)
             VALUES (?, ?, ?)
             """,
-            (session_id, role, content)
+            (session_id, role, content),
         )
 
 
@@ -80,10 +81,11 @@ def get_history(session_id):
             WHERE session_id = ?
             ORDER BY message_id ASC
             """,
-            (session_id,)
+            (session_id,),
         ).fetchall()
 
         return [dict(row) for row in rows]
+
 
 def list_sessions():
     with get_connection() as conn:

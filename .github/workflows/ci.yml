@@ -23,13 +23,29 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install quality tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ruff mypy
+
       - name: Check Python syntax
         run: |
-          python -m compileall -q \
-            src/rag scripts frontend
+          python -m compileall -q src/rag scripts frontend
+
+      - name: Lint with Ruff
+        run: |
+          python -m ruff check src/rag scripts frontend tests
+
+      - name: Check formatting with Ruff
+        run: |
+          python -m ruff format --check src/rag scripts frontend tests
+
+      - name: Check types with MyPy
+        run: |
+          python -m mypy
 
   test:
-    name: Unit tests
+    name: Unit tests and coverage
     runs-on: ubuntu-latest
 
     steps:
@@ -42,19 +58,26 @@ jobs:
           python-version: "3.12"
 
       - name: Install test dependencies
-        run: python -m pip install pytest
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest pytest-cov
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: |
           python -m pytest tests/ -v \
+            --cov=src/rag \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
             --junitxml=report.xml
 
-      - name: Upload test report
+      - name: Upload test and coverage reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pytest-report
-          path: report.xml
+          name: test-and-coverage-reports
+          path: |
+            report.xml
+            coverage.xml
           if-no-files-found: ignore
 
   docker-build:
@@ -67,7 +90,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build backend image
-        run: docker build -f deploy/Dockerfile -t rag-api:ci .
+        run: |
+          docker build \
+            -f deploy/Dockerfile \
+            -t rag-api:ci .
 
       - name: Build frontend image
         run: |

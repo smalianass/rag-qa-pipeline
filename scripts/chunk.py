@@ -1,7 +1,6 @@
-import re
 import json
+import re
 from pathlib import Path
-
 
 # ============================================================
 # CONFIGURATION
@@ -31,7 +30,6 @@ sections = re.split(r"(?m)^## ", markdown)
 documents = []
 
 for section in sections:
-
     section = section.strip()
 
     if not section:
@@ -49,15 +47,13 @@ for section in sections:
     if not content:
         continue
 
-    documents.append({
-        "section": title,
-        "content": content
-    })
+    documents.append({"section": title, "content": content})
 
 
 # ============================================================
 # 3. DÉTECTION DES COMMANDES
 # ============================================================
+
 
 def is_command(text):
     """
@@ -79,7 +75,6 @@ chunk_id = 0
 
 
 for document in documents:
-
     section = document["section"]
     content = document["content"]
 
@@ -89,40 +84,28 @@ for document in documents:
 
     blocks = re.split(r"\n\s*\n", content)
 
-    blocks = [
-        block.strip()
-        for block in blocks
-        if block.strip()
-    ]
+    blocks = [block.strip() for block in blocks if block.strip()]
 
     i = 0
 
     while i < len(blocks):
-
         current = blocks[i]
 
         # ----------------------------------------------------
         # DESCRIPTION + COMMANDE
         # ----------------------------------------------------
 
-        if (
-            i + 1 < len(blocks)
-            and not is_command(current)
-            and is_command(blocks[i + 1])
-        ):
+        if i + 1 < len(blocks) and not is_command(current) and is_command(blocks[i + 1]):
+            combined_content = current + "\n\n" + blocks[i + 1]
 
-            combined_content = (
-                current
-                + "\n\n"
-                + blocks[i + 1]
+            chunks.append(
+                {
+                    "chunk_id": chunk_id,
+                    "source": source_name,
+                    "section": section,
+                    "content": combined_content,
+                }
             )
-
-            chunks.append({
-                "chunk_id": chunk_id,
-                "source": source_name,
-                "section": section,
-                "content": combined_content
-            })
 
             chunk_id += 1
 
@@ -133,13 +116,14 @@ for document in documents:
         # ----------------------------------------------------
 
         else:
-
-            chunks.append({
-                "chunk_id": chunk_id,
-                "source": source_name,
-                "section": section,
-                "content": current
-            })
+            chunks.append(
+                {
+                    "chunk_id": chunk_id,
+                    "source": source_name,
+                    "section": section,
+                    "content": current,
+                }
+            )
 
             chunk_id += 1
 
@@ -151,13 +135,7 @@ for document in documents:
 # ============================================================
 
 with output_path.open("w", encoding="utf-8") as f:
-
-    json.dump(
-        chunks,
-        f,
-        ensure_ascii=False,
-        indent=2
-    )
+    json.dump(chunks, f, ensure_ascii=False, indent=2)
 
 
 # ============================================================
@@ -176,7 +154,6 @@ print()
 
 
 for chunk in chunks:
-
     print("=" * 70)
 
     print(f"CHUNK ID : {chunk['chunk_id']}")
