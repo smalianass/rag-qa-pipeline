@@ -1,4 +1,3 @@
-
 import importlib
 import sys
 from unittest.mock import MagicMock
@@ -16,9 +15,7 @@ def search_module(monkeypatch):
     fake_reranker = MagicMock()
 
     fake_huggingface = MagicMock()
-    fake_huggingface.HuggingFaceEmbeddings.return_value = (
-        fake_embedding_model
-    )
+    fake_huggingface.HuggingFaceEmbeddings.return_value = fake_embedding_model
 
     fake_langchain_milvus = MagicMock()
     fake_langchain_milvus.Milvus.return_value = fake_vector_store
@@ -96,9 +93,7 @@ def test_reranking_sorts_by_score_and_limits_results(search_module):
         ),
         (
             Document(
-                page_content=(
-                    "Un conteneur est une instance exécutable d'une image."
-                ),
+                page_content=("Un conteneur est une instance exécutable d'une image."),
                 metadata={
                     "id": 2,
                     "source": "docker.pdf",
@@ -109,9 +104,7 @@ def test_reranking_sorts_by_score_and_limits_results(search_module):
         ),
         (
             Document(
-                page_content=(
-                    "Une image Docker est un modèle en lecture seule."
-                ),
+                page_content=("Une image Docker est un modèle en lecture seule."),
                 metadata={
                     "id": 3,
                     "source": "docker.pdf",
@@ -122,9 +115,7 @@ def test_reranking_sorts_by_score_and_limits_results(search_module):
         ),
     ]
 
-    vector_store.similarity_search_with_score.return_value = (
-        documents_with_scores
-    )
+    vector_store.similarity_search_with_score.return_value = documents_with_scores
 
     # Le reranker inverse volontairement l'ordre initial.
     reranker.compute_score.return_value = [0.1, 0.9, 0.5]

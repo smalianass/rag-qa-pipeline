@@ -1,4 +1,3 @@
-
 import os
 
 from langchain_core.output_parsers import StrOutputParser
@@ -70,8 +69,7 @@ Section: {chunk["entity"]["section"]}
     )
 
     conversation = "\n".join(
-        f"{message['role']}: {message['content']}"
-        for message in (history or [])
+        f"{message['role']}: {message['content']}" for message in (history or [])
     )
 
     formatted = prompt.format(
@@ -99,8 +97,7 @@ Section: {chunk["entity"]["section"]}
     )
 
     conversation = "\n".join(
-        f"{message['role']}: {message['content']}"
-        for message in (history or [])
+        f"{message['role']}: {message['content']}" for message in (history or [])
     )
 
     return generation_chain.invoke(

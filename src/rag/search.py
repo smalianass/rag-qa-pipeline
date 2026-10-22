@@ -1,4 +1,3 @@
-
 from FlagEmbedding import FlagReranker
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_milvus import Milvus
@@ -62,6 +61,7 @@ print(f"Collection '{COLLECTION_NAME}' connectée via LangChain.")
 # 4. Recherche vectorielle + reranking
 # --------------------------------------------------
 
+
 def search_top_k(query: str, k: int = TOP_K) -> list:
     """
     Recherche les chunks via LangChain/Milvus, puis les reclasse
@@ -99,10 +99,7 @@ def search_top_k(query: str, k: int = TOP_K) -> list:
         )
 
     # Étape 3 : préparer les paires question-document
-    pairs = [
-        [query, candidate["entity"]["content"]]
-        for candidate in candidates
-    ]
+    pairs = [[query, candidate["entity"]["content"]] for candidate in candidates]
 
     # Étape 4 : calculer les scores de reranking
     scores = reranker.compute_score(pairs, normalize=False)
