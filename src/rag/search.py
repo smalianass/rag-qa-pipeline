@@ -49,7 +49,6 @@ vector_store = Milvus(
     vector_field="embedding",
     primary_field="id",
     text_field="content",
-    metadata_field=["source", "section"],
     auto_id=False,
     drop_old=False,
 )
