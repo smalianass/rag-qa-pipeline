@@ -19,6 +19,7 @@ from .search import search_top_k
 
 load_dotenv()
 
+
 def rag(question: str, history: list, k: int = 3) -> str:
 
     # 1. Recherche documentaire dans Milvus

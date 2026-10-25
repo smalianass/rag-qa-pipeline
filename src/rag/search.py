@@ -61,6 +61,7 @@ print(f"Collection '{COLLECTION_NAME}' connectée via LangChain.")
 # 4. Recherche vectorielle + reranking
 # --------------------------------------------------
 
+
 @traceable(
     name="rag-search-and-rerank",
     run_type="retriever",
