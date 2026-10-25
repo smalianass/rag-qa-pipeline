@@ -2,6 +2,7 @@ from FlagEmbedding import FlagReranker
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_milvus import Milvus
 from langsmith import traceable
+
 from .paths import DATA_DIR
 
 # --------------------------------------------------

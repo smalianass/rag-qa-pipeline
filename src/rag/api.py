@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
@@ -15,7 +16,6 @@ from .search import search_top_k
 # ============================================================
 # 1. Fonction RAG avec mémoire conversationnelle
 # ============================================================
-from dotenv import load_dotenv
 
 load_dotenv()
 
