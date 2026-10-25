@@ -17,3 +17,5 @@ langchain_huggingface
 langchain_ollama
 langchain_milvus
 langchain-core
+langsmith
+python-dotenv

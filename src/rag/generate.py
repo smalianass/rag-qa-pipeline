@@ -3,13 +3,18 @@ import os
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama import ChatOllama
+from langsmith import traceable
 
-MODEL_NAME = "llama3.2:3b"
+MODEL_NAME = os.getenv("OLLAMA_MODEL", "llama3.2:1b")
 
 llm = ChatOllama(
     model=MODEL_NAME,
     base_url=os.getenv("OLLAMA_HOST", "http://localhost:11434"),
     temperature=0,
+    num_predict=128,
+    num_ctx=2048,
+    keep_alive="30m",
+    client_kwargs={"timeout": 600},
 )
 
 prompt = ChatPromptTemplate.from_messages(
@@ -81,6 +86,10 @@ Section: {chunk["entity"]["section"]}
     return formatted
 
 
+@traceable(
+    name="rag-generate-answer",
+    run_type="chain",
+)
 def generate_answer(
     question: str,
     chunks: list,

@@ -1,7 +1,7 @@
 from FlagEmbedding import FlagReranker
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_milvus import Milvus
-
+from langsmith import traceable
 from .paths import DATA_DIR
 
 # --------------------------------------------------
@@ -60,7 +60,10 @@ print(f"Collection '{COLLECTION_NAME}' connectée via LangChain.")
 # 4. Recherche vectorielle + reranking
 # --------------------------------------------------
 
-
+@traceable(
+    name="rag-search-and-rerank",
+    run_type="retriever",
+)
 def search_top_k(query: str, k: int = TOP_K) -> list:
     """
     Recherche les chunks via LangChain/Milvus, puis les reclasse

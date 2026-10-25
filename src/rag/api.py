@@ -15,7 +15,9 @@ from .search import search_top_k
 # ============================================================
 # 1. Fonction RAG avec mémoire conversationnelle
 # ============================================================
+from dotenv import load_dotenv
 
+load_dotenv()
 
 def rag(question: str, history: list, k: int = 3) -> str:
 

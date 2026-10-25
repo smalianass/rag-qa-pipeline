@@ -157,7 +157,7 @@ if question:
                         "question": question,
                         "session_id": st.session_state.session_id,
                     },
-                    timeout=180,
+                    timeout=600,
                 )
                 response.raise_for_status()
 

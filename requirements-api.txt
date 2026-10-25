@@ -1,0 +1,12 @@
+fastapi
+langchain-core
+langchain-huggingface
+langchain-milvus
+langchain-ollama
+langsmith
+milvus-lite
+pymilvus
+python-dotenv
+sentence-transformers
+FlagEmbedding
+uvicorn
