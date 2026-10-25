@@ -50,6 +50,7 @@ def search_module(monkeypatch):
 def test_empty_query_returns_empty_list(search_module):
     module, vector_store, _, _ = search_module
 
+    assert module.COLLECTION_NAME == "devops_documents"
     assert module.search_top_k("") == []
     assert module.search_top_k("   ") == []
 

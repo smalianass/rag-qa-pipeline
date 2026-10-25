@@ -7,54 +7,54 @@ from pathlib import Path
 # ============================================================
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
-markdown_path = DATA_DIR / "docker_cheatsheet.md"
 output_path = DATA_DIR / "chunks.json"
 
-source_name = "docker_cheatsheet.pdf"
+sources = [
+    (DATA_DIR / "docker_cheatsheet.md", "docker_cheatsheet.pdf"),
+    (DATA_DIR / "github_actions.md", "github_actions.md"),
+]
 
 
 # ============================================================
 # 1. LECTURE DU MARKDOWN
 # ============================================================
 
-with markdown_path.open("r", encoding="utf-8") as f:
-    markdown = f.read()
-
-
-# ============================================================
-# 2. EXTRACTION DES SECTIONS
-# ============================================================
-
-sections = re.split(r"(?m)^## ", markdown)
-
 documents = []
 
-for section in sections:
-    section = section.strip()
+for markdown_path, source_name in sources:
+    with markdown_path.open("r", encoding="utf-8") as f:
+        markdown = f.read()
 
-    if not section:
-        continue
+    # ============================================================
+    # 2. EXTRACTION DES SECTIONS
+    # ============================================================
 
-    lines = section.splitlines()
+    sections = re.split(r"(?m)^## ", markdown)
 
-    title = lines[0].strip()
+    for section in sections:
+        section = section.strip()
 
-    content = "\n".join(lines[1:]).strip()
+        if not section:
+            continue
 
-    # Supprimer les artefacts d'image Docling
-    content = content.replace("<!-- image -->", "").strip()
+        lines = section.splitlines()
 
-    if not content:
-        continue
+        title = lines[0].strip()
 
-    documents.append({"section": title, "content": content})
+        content = "\n".join(lines[1:]).strip()
+
+        # Supprimer les artefacts d'image Docling
+        content = content.replace("<!-- image -->", "").strip()
+
+        if not content:
+            continue
+
+        documents.append({"source": source_name, "section": title, "content": content})
 
 
 # ============================================================
 # 3. DÉTECTION DES COMMANDES
 # ============================================================
-
-
 def is_command(text):
     """
     Détermine si un bloc correspond à une commande Docker.
@@ -75,6 +75,7 @@ chunk_id = 0
 
 
 for document in documents:
+    source_name = document["source"]
     section = document["section"]
     content = document["content"]
 

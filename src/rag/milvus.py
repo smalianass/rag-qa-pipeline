@@ -3,7 +3,7 @@ from pymilvus import DataType, MilvusClient
 from .paths import DATA_DIR
 
 DB_PATH = DATA_DIR / "milvus.db"
-COLLECTION_NAME = "docker_documents"
+COLLECTION_NAME = "devops_documents"
 EMBEDDING_DIM = 1024
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)

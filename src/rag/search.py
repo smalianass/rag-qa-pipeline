@@ -10,7 +10,7 @@ from .paths import DATA_DIR
 # --------------------------------------------------
 
 DB_PATH = str(DATA_DIR / "milvus.db")
-COLLECTION_NAME = "docker_documents"
+COLLECTION_NAME = "devops_documents"
 
 EMBEDDING_MODEL_NAME = "BAAI/bge-m3"
 RERANKER_MODEL_NAME = "BAAI/bge-reranker-v2-m3"
